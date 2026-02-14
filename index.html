@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanban Simulator IA</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI, Arial, sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+
+header{
+    background:#0b3d91;
+    color:white;
+    padding:15px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:14px;
+}
+
+.header-right{
+    display:flex;
+    gap:30px;
+}
+
+/* IA BAR */
+
+.ai-bar{
+    background:#111827;
+    color:#e5e7eb;
+    padding:12px 25px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.ai-dot{
+    width:10px;
+    height:10px;
+    background:#22c55e;
+    border-radius:50%;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{opacity:0.5;}
+    50%{opacity:1;}
+    100%{opacity:0.5;}
+}
+
+/* OBJECTIVES */
+
+.objective-bar{
+    background:white;
+    padding:10px 25px;
+    border-bottom:1px solid #ddd;
+    font-size:12px;
+}
+
+.objective-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:5px;
+}
+
+.objective-item{
+    background:#eef2ff;
+    padding:4px 7px;
+    border-radius:4px;
+}
+
+/* BOARD */
+
+.board{
+    flex:1;
+    display:flex;
+    gap:15px;
+    padding:20px 25px;
+    height:58vh;
+}
+
+.column{
+    flex:1;
+    background:white;
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.column h2{
+    font-size:12px;
+    margin-bottom:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.cards{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.card{
+    background:#fafafa;
+    padding:10px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    border-left:4px solid #2563eb;
+    transition:all 0.3s ease;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+.add-card{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:45px;
+    border:2px dashed #bbb;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:22px;
+}
+
+/* MODALS */
+
+.form-modal,
+.day-modal,
+.success-modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.form-modal{ background:rgba(0,0,0,0.4); }
+
+.form-box{
+    background:white;
+    padding:25px;
+    width:350px;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.form-box input{
+    padding:8px;
+    border-radius:5px;
+    border:1px solid #ccc;
+}
+
+.form-box button{
+    padding:8px;
+    border:none;
+    background:#0b3d91;
+    color:white;
+    border-radius:5px;
+}
+
+.day-modal{
+    background:rgba(255,255,255,0.85);
+    flex-direction:column;
+}
+
+.loader{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:8px solid #ddd;
+    border-top:8px solid #0b3d91;
+    animation:spin 1s linear infinite;
+    margin-bottom:15px;
+}
+
+@keyframes spin{
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+}
+
+.success-modal{ background:rgba(0,0,0,0.6); }
+
+.success-box{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+    width:350px;
+}
+
+.success-box button{
+    margin-top:15px;
+    padding:8px 15px;
+    border:none;
+    background:#16a34a;
+    color:white;
+    border-radius:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <div><strong>Projeto:</strong> Sistema Web Completo</div>
+    <div class="header-right">
+        <div>Equipe: Alpha</div>
+        <div>Dia: <span id="day">1</span></div>
+        <div id="date"></div>
+    </div>
+</header>
+
+<div class="ai-bar">
+    <div class="ai-dot"></div>
+    <div id="aiMessage">Olá PO. Vamos começar criando a tela de Login.</div>
+</div>
+
+<div class="objective-bar">
+    <strong>Telas obrigatórias:</strong>
+    <div class="objective-list" id="objectiveList"></div>
+</div>
+
+<div class="board">
+
+    <div class="column">
+        <h2>Criação</h2>
+        <div class="cards" id="criacao">
+            <div class="add-card" id="openForm">+</div>
+        </div>
+    </div>
+
+    <div class="column">
+        <h2>Design</h2>
+        <div class="cards" id="design"></div>
+    </div>
+
+    <div class="column">
+        <h2>Desenvolvimento</h2>
+        <div class="cards" id="dev"></div>
+    </div>
+
+    <div class="column">
+        <h2>QA</h2>
+        <div class="cards" id="qa"></div>
+    </div>
+
+    <div class="column">
+        <h2>Finalizado</h2>
+        <div class="cards" id="final"></div>
+    </div>
+
+</div>
+
+<div class="form-modal" id="formModal">
+    <div class="form-box">
+        <input type="text" id="titulo" placeholder="Nome da tela">
+        <button id="createCard">Criar História</button>
+    </div>
+</div>
+
+<div class="day-modal" id="dayModal">
+    <div class="loader"></div>
+    <h3>Um dia passou...</h3>
+</div>
+
+<div class="success-modal" id="successModal">
+    <div class="success-box">
+        <h2>🎉 Missão Concluída!</h2>
+        <p>Você construiu o sistema completo com sucesso.</p>
+        <button onclick="redirect()">OK</button>
+    </div>
+</div>
+
+<script>
+
+let day = 1;
+let finalizadas = [];
+
+const telas = [
+"Login",
+"Cadastro de Usuário",
+"Dashboard",
+"Perfil",
+"Lista de Produtos",
+"Detalhes do Produto",
+"Carrinho",
+"Checkout",
+"Relatórios",
+"Configurações"
+];
+
+const ai = document.getElementById("aiMessage");
+
+document.getElementById("date").innerText =
+new Date().toLocaleDateString("pt-BR");
+
+telas.forEach(t=>{
+    let span=document.createElement("span");
+    span.className="objective-item";
+    span.innerText=t;
+    document.getElementById("objectiveList").appendChild(span);
+});
+
+document.getElementById("openForm").onclick=()=>{
+    ai.innerText="Digite o nome exato de uma das telas obrigatórias.";
+    document.getElementById("formModal").style.display="flex";
+};
+
+document.getElementById("createCard").onclick=()=>{
+
+    let titulo=document.getElementById("titulo").value;
+
+    if(!telas.includes(titulo)){
+        ai.innerText="Essa tela não está no escopo do projeto.";
+        return;
+    }
+
+    ai.innerText="Boa escolha. Agora acompanhe a evolução da equipe.";
+
+    let card=document.createElement("div");
+    card.className="card";
+    card.innerText=titulo;
+    card.dataset.stage="criacao";
+    card.dataset.nome=titulo;
+
+    document.getElementById("criacao").appendChild(card);
+    document.getElementById("formModal").style.display="none";
+
+    card.onclick=()=>move(card);
+};
+
+function move(card){
+
+    let stage=card.dataset.stage;
+
+    if(stage==="criacao"){
+        ai.innerText="Enviando para o time de Design.";
+        animate(card,"design","Design finalizou a interface.");
+        card.dataset.stage="design";
+    }
+    else if(stage==="design"){
+        ai.innerText="Agora Desenvolvimento inicia a codificação.";
+        animate(card,"dev","Desenvolvimento concluiu.");
+        card.dataset.stage="dev";
+    }
+    else if(stage==="dev"){
+        ai.innerText="Hora do QA testar qualidade.";
+        animate(card,"qa","QA aprovou.");
+        card.dataset.stage="qa";
+    }
+    else if(stage==="qa"){
+        animate(card,"final","Entrega concluída.");
+        card.dataset.stage="final";
+        finalizadas.push(card.dataset.nome);
+
+        if(finalizadas.length===10){
+            setTimeout(()=>{
+                document.getElementById("successModal").style.display="flex";
+            },2500);
+        }
+    }
+}
+
+function animate(card,target,msg){
+
+    document.getElementById("dayModal").style.display="flex";
+
+    setTimeout(()=>{
+        document.getElementById(target).appendChild(card);
+        day++;
+        document.getElementById("day").innerText=day;
+        ai.innerText=msg+" Dia "+day+" iniciado.";
+        document.getElementById("dayModal").style.display="none";
+    },100);
+}
+
+function redirect(){
+    window.location.href="https://pablo-ti-2020.github.io/simulador-design/";
+}
+
+</script>
+
+</body>
+</html>
