@@ -188,8 +188,9 @@ header{
 }
 
 .day-modal{
-    background:rgba(255,255,255,0.85);
+    background:rgba(255,255,255,0.9);
     flex-direction:column;
+    text-align:center;
 }
 
 .loader{
@@ -288,9 +289,11 @@ header{
     </div>
 </div>
 
+<!-- MODAL DE DIA ATUALIZADO -->
 <div class="day-modal" id="dayModal">
     <div class="loader"></div>
-    <h3>Um dia passou...</h3>
+    <h3 id="dayText">Dia 1</h3>
+    <h2 id="hourText">08:00</h2>
 </div>
 
 <div class="success-modal" id="successModal">
@@ -391,17 +394,46 @@ function move(card){
     }
 }
 
+/* NOVA ANIMAÇÃO COM HORÁRIO REALISTA */
 function animate(card,target,msg){
 
-    document.getElementById("dayModal").style.display="flex";
+    const modal = document.getElementById("dayModal");
+    const hourText = document.getElementById("hourText");
+    const dayText = document.getElementById("dayText");
 
-    setTimeout(()=>{
-        document.getElementById(target).appendChild(card);
-        day++;
-        document.getElementById("day").innerText=day;
-        ai.innerText=msg+" Dia "+day+" iniciado.";
-        document.getElementById("dayModal").style.display="none";
-    },2500);
+    modal.style.display = "flex";
+    dayText.innerText = "Dia " + day;
+
+    const horas = [8,9,10,11,12,13,14,15,16,17];
+    let indice = 0;
+    let duracao = 0;
+
+    let intervalo = setInterval(()=>{
+
+        duracao++;
+        hourText.innerText = horas[indice] + ":00 | Duração: " + duracao + "h";
+
+        indice++;
+
+        if(indice === horas.length){
+
+            clearInterval(intervalo);
+
+            setTimeout(()=>{
+
+                document.getElementById(target).appendChild(card);
+
+                day++;
+                document.getElementById("day").innerText=day;
+
+                ai.innerText=msg+" Dia "+day+" iniciado.";
+
+                modal.style.display="none";
+
+            },400);
+        }
+
+    },350);
 }
 
 function redirect(){
